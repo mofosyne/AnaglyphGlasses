@@ -3,20 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anaglyph 3D Webcam</title>
+  <title>Virtual Anaglyph Glasses</title>
   <style>
     body {
       margin: 0;
       overflow: hidden; /* Prevent scrolling on small screens */
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       height: 100vh; /* Full viewport height */
       background-color: black; /* Set the background color to black */
+      color: white; /* Set text color to white */
     }
 
     #webcam {
       display: none; /* Hide the webcam element initially */
+    }
+
+    #info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    #flipButton {
+      background-color: white;
+      color: black;
+      padding: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    #githubLink {
+      font-size: 12px;
+      text-decoration: none;
+      color: #61dafb; /* Set link color to blue */
+      display: block; /* Make the link a block element to add margin */
+      margin-top: 10px;
+    }
+
+    #glasses {
+      display: flex;
     }
 
     .redglass,
@@ -27,27 +62,23 @@
       object-fit: cover; /* Maintain aspect ratio without stretching */
       background-color: black; /* Set the background color to black */
       border: none; /* Remove the border */
-    }
-
-    #flipButton {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 2;
-      background-color: white;
-      color: black;
-      padding: 5px;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
+      margin: 10px;
     }
   </style>
 </head>
 <body>
   <video id="webcam" width="640" height="480" autoplay></video>
-  <canvas id="redCanvas" class="redglass" width="320" height="240"></canvas>
-  <canvas id="greenCanvas" class="greenglass" width="320" height="240"></canvas>
-  <button id="flipButton" onclick="flipCamera()">Flip Camera</button>
+
+  <div id="info">
+    <h1>Virtual Anaglyph Glasses</h1>
+    <button id="flipButton" onclick="flipCamera()">Flip Camera</button>
+    <a id="githubLink" href="https://github.com/mofosyne/AnaglyphGlasses" target="_blank">Learn more about Anaglyph Glasses</a>
+  </div>
+
+  <div id="glasses">
+    <canvas id="redCanvas" class="redglass" width="320" height="240"></canvas>
+    <canvas id="greenCanvas" class="greenglass" width="320" height="240"></canvas>
+  </div>
 
   <script>
     let currentCamera = 'environment'; // 'user' for front camera, 'environment' for back camera
