@@ -11,3 +11,5 @@ or use your hand between the two video feeds to help your eyes focus on each ima
 This uses your webcam.
 
 [Click to use Virtual Anaglyph Glasses](https://mofosyne.github.io/AnaglyphGlasses/)
+
+For some example images you can check the [wikipedia entry on Anaglyph 3D images](https://en.wikipedia.org/wiki/Anaglyph_3D).
