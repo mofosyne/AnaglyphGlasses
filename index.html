@@ -22,14 +22,15 @@
 
     #info {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
+      justify-content: center;
       margin-bottom: 20px;
     }
 
     h1 {
       font-size: 24px;
-      margin-bottom: 10px;
+      margin: 0 10px; /* Add some margin between the elements */
     }
 
     #flipButton {
@@ -39,15 +40,14 @@
       cursor: pointer;
       border: none;
       border-radius: 5px;
-      margin-top: 10px;
+      margin: 0 10px; /* Add some margin between the elements */
     }
 
     #githubLink {
       font-size: 12px;
       text-decoration: none;
       color: #61dafb; /* Set link color to blue */
-      display: block; /* Make the link a block element to add margin */
-      margin-top: 10px;
+      margin: 0 10px; /* Add some margin between the elements */
     }
 
     #glasses {
@@ -71,8 +71,8 @@
 
   <div id="info">
     <h1>Virtual Anaglyph Glasses</h1>
+    <a id="githubLink" href="https://github.com/mofosyne/AnaglyphGlasses" target="_blank">Github Project Page</a>
     <button id="flipButton" onclick="flipCamera()">Flip Camera</button>
-    <a id="githubLink" href="https://github.com/mofosyne/AnaglyphGlasses" target="_blank">Learn more about Anaglyph Glasses</a>
   </div>
 
   <div id="glasses">
