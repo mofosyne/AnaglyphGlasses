@@ -16,7 +16,7 @@
     }
 
     #webcam {
-      display: none; /* Hide the webcam element */
+      display: none; /* Hide the webcam element initially */
     }
 
     .redglass,
@@ -28,52 +28,55 @@
       background-color: black; /* Set the background color to black */
       border: none; /* Remove the border */
     }
-  </style>  
+
+    #flipButton {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+      background-color: white;
+      color: black;
+      padding: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
   <video id="webcam" width="640" height="480" autoplay></video>
   <canvas id="redCanvas" class="redglass" width="320" height="240"></canvas>
   <canvas id="greenCanvas" class="greenglass" width="320" height="240"></canvas>
+  <button id="flipButton" onclick="flipCamera()">Flip Camera</button>
 
   <script>
+    let currentCamera = 'user'; // 'user' for front camera, 'environment' for back camera
     const webcam = document.getElementById('webcam');
     const redCanvas = document.getElementById('redCanvas');
     const greenCanvas = document.getElementById('greenCanvas');
-    
-    async function getBackFacingCamera() {
-    try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const backFacingCameras = devices.filter(device => device.kind === 'videoinput' && device.label.toLowerCase().includes('back'));
 
-        if (backFacingCameras.length > 0) {
-          const constraints = {
-            video: {
-              deviceId: { exact: backFacingCameras[0].deviceId }
-            }
-          };
-
-          const stream = await navigator.mediaDevices.getUserMedia(constraints);
-          webcam.srcObject = stream;
-        } else {
-          console.warn('No back-facing camera found. Falling back to the first available camera.');
-          await getAnyCamera();
-        }
-      } catch (error) {
-        console.error('Error accessing webcam:', error);
-      }
-    }
-
-    async function getAnyCamera() {
+    async function getCameraStream() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const constraints = {
+          video: {
+            facingMode: currentCamera
+          }
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         webcam.srcObject = stream;
       } catch (error) {
         console.error('Error accessing webcam:', error);
       }
     }
 
+    function flipCamera() {
+      currentCamera = currentCamera === 'user' ? 'environment' : 'user';
+      getCameraStream();
+    }
+
     // Check for webcam support and select the back-facing camera if available, otherwise, fallback to any camera
-    getBackFacingCamera();
+    getCameraStream();
 
     function processFrame() {
       const redContext = redCanvas.getContext('2d');
