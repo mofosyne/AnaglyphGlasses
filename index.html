@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anaglyph 3D Webcam</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden; /* Prevent scrolling on small screens */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh; /* Full viewport height */
+      background-color: black; /* Set the background color to black */
+    }
+
+    #webcam {
+      display: none; /* Hide the webcam element */
+    }
+
+    .redglass,
+    .greenglass {
+      box-sizing: border-box;
+      width: 50vw; /* Make each canvas fill half the screen width */
+      height: auto; /* Maintain aspect ratio */
+      object-fit: cover; /* Maintain aspect ratio without stretching */
+      background-color: black; /* Set the background color to black */
+      border: none; /* Remove the border */
+    }
+  </style>  
+</head>
+<body>
+  <video id="webcam" width="640" height="480" autoplay></video>
+  <canvas id="redCanvas" class="redglass" width="320" height="240"></canvas>
+  <canvas id="greenCanvas" class="greenglass" width="320" height="240"></canvas>
+
+  <script>
+    const webcam = document.getElementById('webcam');
+    const redCanvas = document.getElementById('redCanvas');
+    const greenCanvas = document.getElementById('greenCanvas');
+    
+    // Check for webcam support
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        webcam.srcObject = stream;
+      })
+      .catch((error) => {
+        console.error('Error accessing webcam:', error);
+      });
+
+    function processFrame() {
+      const redContext = redCanvas.getContext('2d');
+      const greenContext = greenCanvas.getContext('2d');
+
+      // Draw webcam video on both canvases
+      redContext.drawImage(webcam, 0, 0, redCanvas.width, redCanvas.height);
+      greenContext.drawImage(webcam, 0, 0, greenCanvas.width, greenCanvas.height);
+
+      // Extract red channel for the red canvas
+      const redImageData = redContext.getImageData(0, 0, redCanvas.width, redCanvas.height);
+      for (let i = 0; i < redImageData.data.length; i += 4) {
+        // Set green and blue channels to zero
+        redImageData.data[i + 1] = 0;
+        redImageData.data[i + 2] = 0;
+      }
+      redContext.putImageData(redImageData, 0, 0);
+
+      // Extract green channel for the green canvas
+      const greenImageData = greenContext.getImageData(0, 0, greenCanvas.width, greenCanvas.height);
+      for (let i = 0; i < greenImageData.data.length; i += 4) {
+        // Set red and blue channels to zero
+        greenImageData.data[i] = 0;
+        greenImageData.data[i + 2] = 0;
+      }
+      greenContext.putImageData(greenImageData, 0, 0);
+
+      // Repeat the process for each frame
+      requestAnimationFrame(processFrame);
+    }
+
+    // Start processing frames once the webcam is ready
+    webcam.addEventListener('loadeddata', () => {
+      requestAnimationFrame(processFrame);
+    });
+  </script>
+</body>
+</html>
