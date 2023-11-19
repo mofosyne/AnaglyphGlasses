@@ -13,3 +13,7 @@ This uses your webcam.
 [Click to use Virtual Anaglyph Glasses](https://mofosyne.github.io/AnaglyphGlasses/)
 
 For some example images you can check the [wikipedia entry on Anaglyph 3D images](https://en.wikipedia.org/wiki/Anaglyph_3D).
+
+# To contribute
+
+This is an opensource project, feel free to send a pull request or make a fork. This was created with the assistance of ChatGPT.
