@@ -40,14 +40,40 @@
     const redCanvas = document.getElementById('redCanvas');
     const greenCanvas = document.getElementById('greenCanvas');
     
-    // Check for webcam support
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then((stream) => {
-        webcam.srcObject = stream;
-      })
-      .catch((error) => {
+    async function getBackFacingCamera() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const backFacingCameras = devices.filter(device => device.kind === 'videoinput' && device.label.toLowerCase().includes('back'));
+
+        if (backFacingCameras.length > 0) {
+          const constraints = {
+            video: {
+              deviceId: { exact: backFacingCameras[0].deviceId }
+            }
+          };
+
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          webcam.srcObject = stream;
+        } else {
+          console.warn('No back-facing camera found. Falling back to the first available camera.');
+          await getAnyCamera();
+        }
+      } catch (error) {
         console.error('Error accessing webcam:', error);
-      });
+      }
+    }
+
+    async function getAnyCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        webcam.srcObject = stream;
+      } catch (error) {
+        console.error('Error accessing webcam:', error);
+      }
+    }
+
+    // Check for webcam support and select the back-facing camera if available, otherwise, fallback to any camera
+    getBackFacingCamera();
 
     function processFrame() {
       const redContext = redCanvas.getContext('2d');
