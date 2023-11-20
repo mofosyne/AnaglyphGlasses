@@ -7,17 +7,17 @@
   <style>
     body {
       margin: 0;
-      overflow: hidden; /* Prevent scrolling on small screens */
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100vh; /* Full viewport height */
-      background-color: black; /* Set the background color to black */
-      color: white; /* Set text color to white */
+      height: 100vh;
+      background-color: black;
+      color: white;
     }
 
     #webcam {
-      display: none; /* Hide the webcam element initially */
+      display: none;
     }
 
     #info {
@@ -30,7 +30,7 @@
 
     h1 {
       font-size: 24px;
-      margin: 0 10px; /* Add some margin between the elements */
+      margin: 0 10px;
     }
 
     #flipButton,
@@ -41,14 +41,14 @@
       cursor: pointer;
       border: none;
       border-radius: 5px;
-      margin: 0 10px; /* Add some margin between the elements */
+      margin: 0 10px;
     }
 
     #githubLink {
       font-size: 12px;
       text-decoration: none;
-      color: #61dafb; /* Set link color to blue */
-      margin: 0 10px; /* Add some margin between the elements */
+      color: #61dafb;
+      margin: 0 10px;
     }
 
     #glasses {
@@ -56,13 +56,13 @@
     }
 
     .redglass,
-    .greenglass {
+    .cyanglass {
       box-sizing: border-box;
-      width: 50vw; /* Make each canvas fill half the screen width */
-      height: auto; /* Maintain aspect ratio */
-      object-fit: cover; /* Maintain aspect ratio without stretching */
-      background-color: black; /* Set the background color to black */
-      border: none; /* Remove the border */
+      width: 50vw;
+      height: auto;
+      object-fit: cover;
+      background-color: black;
+      border: none;
       margin: 10px;
     }
   </style>
@@ -79,14 +79,14 @@
 
   <div id="glasses">
     <canvas id="redCanvas" class="redglass" width="320" height="240"></canvas>
-    <canvas id="greenCanvas" class="greenglass" width="320" height="240"></canvas>
+    <canvas id="cyanCanvas" class="cyanglass" width="320" height="240"></canvas>
   </div>
 
   <script>
-    let currentCamera = 'environment'; // 'user' for front camera, 'environment' for back camera
+    let currentCamera = 'environment';
     const webcam = document.getElementById('webcam');
     const redCanvas = document.getElementById('redCanvas');
-    const greenCanvas = document.getElementById('greenCanvas');
+    const cyanCanvas = document.getElementById('cyanCanvas');
     const zoomSlider = document.getElementById('zoomSlider');
 
     async function getCameraStream() {
@@ -143,29 +143,28 @@
 
     function processFrame() {
       const redContext = redCanvas.getContext('2d');
-      const greenContext = greenCanvas.getContext('2d');
+      const cyanContext = cyanCanvas.getContext('2d');
 
       // Draw webcam video on both canvases
       redContext.drawImage(webcam, 0, 0, redCanvas.width, redCanvas.height);
-      greenContext.drawImage(webcam, 0, 0, greenCanvas.width, greenCanvas.height);
+      cyanContext.drawImage(webcam, 0, 0, cyanCanvas.width, cyanCanvas.height);
 
       // Extract red channel for the red canvas
       const redImageData = redContext.getImageData(0, 0, redCanvas.width, redCanvas.height);
-      for ( let i = 0; i < redImageData.data.length; i += 4) {
+      for (let i = 0; i < redImageData.data.length; i += 4) {
         // Set green and blue channels to zero
         redImageData.data[i + 1] = 0;
         redImageData.data[i + 2] = 0;
       }
       redContext.putImageData(redImageData, 0, 0);
 
-      // Extract green channel for the green canvas
-      const greenImageData = greenContext.getImageData(0, 0, greenCanvas.width, greenCanvas.height);
-      for ( let i = 0; i < greenImageData.data.length; i += 4) {
-        // Set red and blue channels to zero
-        greenImageData.data[i] = 0;
-        greenImageData.data[i + 2] = 0;
+      // Extract cyan channel for the cyan canvas
+      const cyanImageData = cyanContext.getImageData(0, 0, cyanCanvas.width, cyanCanvas.height);
+      for (let i = 0; i < cyanImageData.data.length; i += 4) {
+        // Set red channel to zero
+        cyanImageData.data[i] = 0;
       }
-      greenContext.putImageData(greenImageData, 0, 0);
+      cyanContext.putImageData(cyanImageData, 0, 0);
 
       // Repeat the process for each frame
       requestAnimationFrame(processFrame);
