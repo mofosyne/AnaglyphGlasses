@@ -73,6 +73,12 @@
   <div id="info">
     <h1>Virtual Anaglyph Glasses</h1>
     <button id="flipButton" onclick="flipCamera()">Flip Camera</button>
+    <button id="toggleMono" onclick="toggleMono()">Toggle Monochrome</button>
+    <select id="colorPair" onchange="changeColorPair()">
+        <option value="redCyan">Red/Cyan</option>
+        <option value="redBlue">Red/Blue</option>
+        <option value="redGreen">Red/Green</option>
+      </select>
     <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1" oninput="updateZoom()">
     <a id="githubLink" href="https://github.com/mofosyne/AnaglyphGlasses" target="_blank">Github Project Page</a>
   </div>
@@ -83,11 +89,28 @@
   </div>
 
   <script>
+    let isMonochromeMode = false;
+    let currentColorPair = 'redCyan'; // Default color pair
     let currentCamera = 'environment';
     const webcam = document.getElementById('webcam');
     const redCanvas = document.getElementById('redCanvas');
     const cyanCanvas = document.getElementById('cyanCanvas');
     const zoomSlider = document.getElementById('zoomSlider');
+
+    // Function to change color pair mode
+    function changeColorPair() {
+        const colorPairSelector = document.getElementById('colorPair');
+        currentColorPair = colorPairSelector.value;
+    }
+
+    // Function to toggle between color pair and monochrome modes
+    function toggleMono() {
+        isMonochromeMode = !isMonochromeMode;
+
+        // Change the button text based on the mode
+        const toggleMonoButton = document.getElementById('toggleMono');
+        toggleMonoButton.innerText = isMonochromeMode ? 'Toggle Color Pair Mode' : 'Toggle Monochrome Mode';
+    }
 
     async function getCameraStream() {
       try {
@@ -113,7 +136,7 @@
       const zoomValue = zoomSlider.value;
 
       const redContext = redCanvas.getContext('2d');
-      const greenContext = greenCanvas.getContext('2d');
+      const greenContext = cyanCanvas.getContext('2d');
 
       // Clear previous transformations
       redContext.setTransform(1, 0, 0, 1, 0, 0);
@@ -142,35 +165,126 @@
     getCameraStream();
 
     function processFrame() {
-      const redContext = redCanvas.getContext('2d');
-      const cyanContext = cyanCanvas.getContext('2d');
+        const redContext = redCanvas.getContext('2d');
+        const cyanContext = cyanCanvas.getContext('2d');
 
-      // Draw webcam video on both canvases
-      redContext.drawImage(webcam, 0, 0, redCanvas.width, redCanvas.height);
-      cyanContext.drawImage(webcam, 0, 0, cyanCanvas.width, cyanCanvas.height);
+        // Draw webcam video on both canvases
+        redContext.drawImage(webcam, 0, 0, redCanvas.width, redCanvas.height);
+        cyanContext.drawImage(webcam, 0, 0, cyanCanvas.width, cyanCanvas.height);
 
-      // Extract red channel for the red canvas
-      const redImageData = redContext.getImageData(0, 0, redCanvas.width, redCanvas.height);
-      for (let i = 0; i < redImageData.data.length; i += 4) {
-        // Set green and blue channels to zero
-        redImageData.data[i + 1] = 0;
-        redImageData.data[i + 2] = 0;
-      }
-      redContext.putImageData(redImageData, 0, 0);
+        // Extract channels based on the selected color pair mode
+        if (currentColorPair === 'redCyan') {
+            // Red/Cyan color pair
+            extractRedCyanChannels(redContext, cyanContext);
+        } else if (currentColorPair === 'redBlue') {
+            // Red/Blue color pair
+            extractRedBlueChannels(redContext, cyanContext);
+        } else if (currentColorPair === 'redGreen') {
+            // Red/Green color pair
+            extractRedGreenChannels(redContext, cyanContext);
+        }
 
-      // Extract cyan channel for the cyan canvas
-      const cyanImageData = cyanContext.getImageData(0, 0, cyanCanvas.width, cyanCanvas.height);
-      for (let i = 0; i < cyanImageData.data.length; i += 4) {
-        // Set red channel to zero
-        cyanImageData.data[i] = 0;
-      }
-      cyanContext.putImageData(cyanImageData, 0, 0);
-
-      // Repeat the process for each frame
-      requestAnimationFrame(processFrame);
+        // Repeat the process for each frame
+        requestAnimationFrame(processFrame);
     }
 
-    // Start processing frames once the webcam is ready
+    // Function to extract red and cyan channels for Red/Cyan color pair
+    function extractRedCyanChannels(redContext, cyanContext) {
+        // Extract red channel for the red canvas
+        const redImageData = redContext.getImageData(0, 0, redCanvas.width, redCanvas.height);
+        for (let i = 0; i < redImageData.data.length; i += 4) {
+            // Set green and blue channels to zero
+            redImageData.data[i + 1] = 0;
+            redImageData.data[i + 2] = 0;
+            if (isMonochromeMode)
+            {
+                redImageData.data[i + 1] = redImageData.data[i + 0];
+                redImageData.data[i + 2] = redImageData.data[i + 0]; 
+            }
+        }
+        redContext.putImageData(redImageData, 0, 0);
+
+        // Extract cyan channel for the cyan canvas
+        const cyanImageData = cyanContext.getImageData(0, 0, cyanCanvas.width, cyanCanvas.height);
+        for (let i = 0; i < cyanImageData.data.length; i += 4) {
+            // Set red channel to zero
+            cyanImageData.data[i] = 0;
+            if (isMonochromeMode)
+            {
+                const avg_green_blue = cyanImageData.data[i+1]/2 + cyanImageData.data[i+2]/2;
+                cyanImageData.data[i + 0] = avg_green_blue;
+                cyanImageData.data[i + 1] = avg_green_blue;
+                cyanImageData.data[i + 2] = avg_green_blue;
+
+            }
+        }
+        cyanContext.putImageData(cyanImageData, 0, 0);
+    }
+    
+
+    // Function to extract red and blue channels for Red/Blue color pair
+    function extractRedBlueChannels(redContext, cyanContext) {
+        // Extract red channel for the red canvas
+        const redImageData = redContext.getImageData(0, 0, redCanvas.width, redCanvas.height);
+        for (let i = 0; i < redImageData.data.length; i += 4) {
+            // Set green and blue channels to zero
+            redImageData.data[i + 1] = 0;
+            redImageData.data[i + 2] = 0;
+            if (isMonochromeMode)
+            {
+                redImageData.data[i + 1] = redImageData.data[i + 0];
+                redImageData.data[i + 2] = redImageData.data[i + 0];
+            }
+        }
+        redContext.putImageData(redImageData, 0, 0);
+
+        // Extract blue channel for the blue canvas
+        const cyanImageData = cyanContext.getImageData(0, 0, cyanCanvas.width, cyanCanvas.height);
+        for (let i = 0; i < cyanImageData.data.length; i += 4) {
+            // Set red and green channel to zero
+            cyanImageData.data[i] = 0;
+            cyanImageData.data[i + 1] = 0;
+            if (isMonochromeMode)
+            {
+                cyanImageData.data[i + 0] = cyanImageData.data[i + 2];
+                cyanImageData.data[i + 1] = cyanImageData.data[i + 2]; 
+            }
+        }
+        cyanContext.putImageData(cyanImageData, 0, 0);
+    }
+
+    // Function to extract red and green channels for Red/Green color pair
+    function extractRedGreenChannels(redContext, cyanContext) {
+        // Extract red channel for the red canvas
+        const redImageData = redContext.getImageData(0, 0, redCanvas.width, redCanvas.height);
+        for (let i = 0; i < redImageData.data.length; i += 4) {
+            // Set green and blue channels to zero
+            redImageData.data[i + 1] = 0;
+            redImageData.data[i + 2] = 0;
+            if (isMonochromeMode)
+            {
+                redImageData.data[i + 1] = redImageData.data[i + 0];
+                redImageData.data[i + 2] = redImageData.data[i + 0];
+            }
+        }
+        redContext.putImageData(redImageData, 0, 0);
+
+        // Extract blue channel for the blue canvas
+        const cyanImageData = cyanContext.getImageData(0, 0, cyanCanvas.width, cyanCanvas.height);
+        for (let i = 0; i < cyanImageData.data.length; i += 4) {
+            // Set red and blue channel to zero
+            cyanImageData.data[i] = 0;
+            cyanImageData.data[i + 2] = 0;
+            if (isMonochromeMode)
+            {
+                cyanImageData.data[i + 0] = cyanImageData.data[i + 1];
+                cyanImageData.data[i + 2] = cyanImageData.data[i + 1];
+            }
+        }
+        cyanContext.putImageData(cyanImageData, 0, 0);
+    }
+
+    // Start processing frames once  the webcam is ready
     webcam.addEventListener('loadeddata', () => {
       requestAnimationFrame(processFrame);
     });
