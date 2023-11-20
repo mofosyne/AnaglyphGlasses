@@ -55,8 +55,8 @@
       display: flex;
     }
 
-    .redglass,
-    .cyanglass {
+    .leftEyeGlass,
+    .rightEyeGlass {
       box-sizing: border-box;
       width: 50vw;
       height: auto;
@@ -84,8 +84,8 @@
   </div>
 
   <div id="glasses">
-    <canvas id="redCanvas" class="redglass" width="320" height="240"></canvas>
-    <canvas id="cyanCanvas" class="cyanglass" width="320" height="240"></canvas>
+    <canvas id="leftEyeCanvas" class="leftEyeGlass" width="320" height="240"></canvas>
+    <canvas id="rightEyeCanvas" class="rightEyeGlass" width="320" height="240"></canvas>
   </div>
 
   <script>
@@ -93,8 +93,8 @@
     let currentColorPair = 'redCyan'; // Default color pair
     let currentCamera = 'environment';
     const webcam = document.getElementById('webcam');
-    const redCanvas = document.getElementById('redCanvas');
-    const cyanCanvas = document.getElementById('cyanCanvas');
+    const leftEyeCanvas = document.getElementById('leftEyeCanvas');
+    const rightEyeCanvas = document.getElementById('rightEyeCanvas');
     const zoomSlider = document.getElementById('zoomSlider');
 
     // Function to change color pair mode
@@ -135,53 +135,51 @@
     function updateZoom() {
       const zoomValue = zoomSlider.value;
 
-      const redContext = redCanvas.getContext('2d');
-      const greenContext = cyanCanvas.getContext('2d');
+      const leftEyeContext = leftEyeCanvas.getContext('2d');
+      const rightEyeContext = rightEyeCanvas.getContext('2d');
 
       // Clear previous transformations
-      redContext.setTransform(1, 0, 0, 1, 0, 0);
-      greenContext.setTransform(1, 0, 0, 1, 0, 0);
+      leftEyeContext.setTransform(1, 0, 0, 1, 0, 0);
+      rightEyeContext.setTransform(1, 0, 0, 1, 0, 0);
 
       // Get the center coordinates
-      const centerX = redCanvas.width / 2;
-      const centerY = redCanvas.height / 2;
+      const centerX = leftEyeCanvas.width / 2;
+      const centerY = leftEyeCanvas.height / 2;
 
       // Translate to the center
-      redContext.translate(centerX, centerY);
-      greenContext.translate(centerX, centerY);
+      leftEyeContext.translate(centerX, centerY);
+      rightEyeContext.translate(centerX, centerY);
 
-      // Apply zoom to red canvas
-      redContext.scale(zoomValue, zoomValue);
-
-      // Apply zoom to green canvas
-      greenContext.scale(zoomValue, zoomValue);
+      // Apply zoom to canvas
+      leftEyeContext.scale(zoomValue, zoomValue);
+      rightEyeContext.scale(zoomValue, zoomValue);
 
       // Translate back to the original position
-      redContext.translate(-centerX, -centerY);
-      greenContext.translate(-centerX, -centerY);
+      leftEyeContext.translate(-centerX, -centerY);
+      rightEyeContext.translate(-centerX, -centerY);
     }
 
     // Check for webcam support and select the back-facing camera if available, otherwise, fallback to any camera
     getCameraStream();
 
     function processFrame() {
-        const redContext = redCanvas.getContext('2d');
-        const cyanContext = cyanCanvas.getContext('2d');
+        const leftEyeContext = leftEyeCanvas.getContext('2d');
+        const rightEyeContext = rightEyeCanvas.getContext('2d');
 
         // Draw webcam video on both canvases
-        redContext.drawImage(webcam, 0, 0, redCanvas.width, redCanvas.height);
-        cyanContext.drawImage(webcam, 0, 0, cyanCanvas.width, cyanCanvas.height);
+        leftEyeContext.drawImage(webcam, 0, 0, leftEyeCanvas.width, leftEyeCanvas.height);
+        rightEyeContext.drawImage(webcam, 0, 0, rightEyeCanvas.width, rightEyeCanvas.height);
 
         // Extract channels based on the selected color pair mode
         if (currentColorPair === 'redCyan') {
             // Red/Cyan color pair
-            extractRedCyanChannels(redContext, cyanContext);
+            extractRedCyanChannels(leftEyeContext, rightEyeContext);
         } else if (currentColorPair === 'redBlue') {
             // Red/Blue color pair
-            extractRedBlueChannels(redContext, cyanContext);
+            extractRedBlueChannels(leftEyeContext, rightEyeContext);
         } else if (currentColorPair === 'redGreen') {
             // Red/Green color pair
-            extractRedGreenChannels(redContext, cyanContext);
+            extractRedGreenChannels(leftEyeContext, rightEyeContext);
         }
 
         // Repeat the process for each frame
@@ -189,99 +187,98 @@
     }
 
     // Function to extract red and cyan channels for Red/Cyan color pair
-    function extractRedCyanChannels(redContext, cyanContext) {
-        // Extract red channel for the red canvas
-        const redImageData = redContext.getImageData(0, 0, redCanvas.width, redCanvas.height);
-        for (let i = 0; i < redImageData.data.length; i += 4) {
+    function extractRedCyanChannels(leftEyeContext, rightEyeContext) {
+        // Extract red channel for the left eye canvas
+        const leftEyeImageData = leftEyeContext.getImageData(0, 0, leftEyeCanvas.width, leftEyeCanvas.height);
+        for (let i = 0; i < leftEyeImageData.data.length; i += 4) {
             // Set green and blue channels to zero
-            redImageData.data[i + 1] = 0;
-            redImageData.data[i + 2] = 0;
+            leftEyeImageData.data[i + 1] = 0;
+            leftEyeImageData.data[i + 2] = 0;
             if (isMonochromeMode)
             {
-                redImageData.data[i + 1] = redImageData.data[i + 0];
-                redImageData.data[i + 2] = redImageData.data[i + 0]; 
+                leftEyeImageData.data[i + 1] = leftEyeImageData.data[i + 0];
+                leftEyeImageData.data[i + 2] = leftEyeImageData.data[i + 0]; 
             }
         }
-        redContext.putImageData(redImageData, 0, 0);
+        leftEyeContext.putImageData(leftEyeImageData, 0, 0);
 
         // Extract cyan channel for the cyan canvas
-        const cyanImageData = cyanContext.getImageData(0, 0, cyanCanvas.width, cyanCanvas.height);
-        for (let i = 0; i < cyanImageData.data.length; i += 4) {
+        const rightEyeImageData = rightEyeContext.getImageData(0, 0, rightEyeCanvas.width, rightEyeCanvas.height);
+        for (let i = 0; i < rightEyeImageData.data.length; i += 4) {
             // Set red channel to zero
-            cyanImageData.data[i] = 0;
+            rightEyeImageData.data[i] = 0;
             if (isMonochromeMode)
             {
-                const avg_green_blue = cyanImageData.data[i+1]/2 + cyanImageData.data[i+2]/2;
-                cyanImageData.data[i + 0] = avg_green_blue;
-                cyanImageData.data[i + 1] = avg_green_blue;
-                cyanImageData.data[i + 2] = avg_green_blue;
+                const avg_green_blue = rightEyeImageData.data[i+1]/2 + rightEyeImageData.data[i+2]/2;
+                rightEyeImageData.data[i + 0] = avg_green_blue;
+                rightEyeImageData.data[i + 1] = avg_green_blue;
+                rightEyeImageData.data[i + 2] = avg_green_blue;
 
             }
         }
-        cyanContext.putImageData(cyanImageData, 0, 0);
+        rightEyeContext.putImageData(rightEyeImageData, 0, 0);
     }
     
-
     // Function to extract red and blue channels for Red/Blue color pair
-    function extractRedBlueChannels(redContext, cyanContext) {
-        // Extract red channel for the red canvas
-        const redImageData = redContext.getImageData(0, 0, redCanvas.width, redCanvas.height);
-        for (let i = 0; i < redImageData.data.length; i += 4) {
+    function extractRedBlueChannels(leftEyeContext, rightEyeContext) {
+        // Extract red channel for the left eye
+        const leftEyeImageData = leftEyeContext.getImageData(0, 0, leftEyeCanvas.width, leftEyeCanvas.height);
+        for (let i = 0; i < leftEyeImageData.data.length; i += 4) {
             // Set green and blue channels to zero
-            redImageData.data[i + 1] = 0;
-            redImageData.data[i + 2] = 0;
+            leftEyeImageData.data[i + 1] = 0;
+            leftEyeImageData.data[i + 2] = 0;
             if (isMonochromeMode)
             {
-                redImageData.data[i + 1] = redImageData.data[i + 0];
-                redImageData.data[i + 2] = redImageData.data[i + 0];
+                leftEyeImageData.data[i + 1] = leftEyeImageData.data[i + 0];
+                leftEyeImageData.data[i + 2] = leftEyeImageData.data[i + 0];
             }
         }
-        redContext.putImageData(redImageData, 0, 0);
+        leftEyeContext.putImageData(leftEyeImageData, 0, 0);
 
-        // Extract blue channel for the blue canvas
-        const cyanImageData = cyanContext.getImageData(0, 0, cyanCanvas.width, cyanCanvas.height);
-        for (let i = 0; i < cyanImageData.data.length; i += 4) {
+        // Extract blue channel for the right eye
+        const rightEyeImageData = rightEyeContext.getImageData(0, 0, rightEyeCanvas.width, rightEyeCanvas.height);
+        for (let i = 0; i < rightEyeImageData.data.length; i += 4) {
             // Set red and green channel to zero
-            cyanImageData.data[i] = 0;
-            cyanImageData.data[i + 1] = 0;
+            rightEyeImageData.data[i] = 0;
+            rightEyeImageData.data[i + 1] = 0;
             if (isMonochromeMode)
             {
-                cyanImageData.data[i + 0] = cyanImageData.data[i + 2];
-                cyanImageData.data[i + 1] = cyanImageData.data[i + 2]; 
+                rightEyeImageData.data[i + 0] = rightEyeImageData.data[i + 2];
+                rightEyeImageData.data[i + 1] = rightEyeImageData.data[i + 2]; 
             }
         }
-        cyanContext.putImageData(cyanImageData, 0, 0);
+        rightEyeContext.putImageData(rightEyeImageData, 0, 0);
     }
 
     // Function to extract red and green channels for Red/Green color pair
-    function extractRedGreenChannels(redContext, cyanContext) {
-        // Extract red channel for the red canvas
-        const redImageData = redContext.getImageData(0, 0, redCanvas.width, redCanvas.height);
-        for (let i = 0; i < redImageData.data.length; i += 4) {
+    function extractRedGreenChannels(leftEyeContext, rightEyeContext) {
+        // Extract red channel for the left eye
+        const leftEyeImageData = leftEyeContext.getImageData(0, 0, leftEyeCanvas.width, leftEyeCanvas.height);
+        for (let i = 0; i < leftEyeImageData.data.length; i += 4) {
             // Set green and blue channels to zero
-            redImageData.data[i + 1] = 0;
-            redImageData.data[i + 2] = 0;
+            leftEyeImageData.data[i + 1] = 0;
+            leftEyeImageData.data[i + 2] = 0;
             if (isMonochromeMode)
             {
-                redImageData.data[i + 1] = redImageData.data[i + 0];
-                redImageData.data[i + 2] = redImageData.data[i + 0];
+                leftEyeImageData.data[i + 1] = leftEyeImageData.data[i + 0];
+                leftEyeImageData.data[i + 2] = leftEyeImageData.data[i + 0];
             }
         }
-        redContext.putImageData(redImageData, 0, 0);
+        leftEyeContext.putImageData(leftEyeImageData, 0, 0);
 
-        // Extract blue channel for the blue canvas
-        const cyanImageData = cyanContext.getImageData(0, 0, cyanCanvas.width, cyanCanvas.height);
-        for (let i = 0; i < cyanImageData.data.length; i += 4) {
+        // Extract blue channel for the right eye
+        const rightEyeImageData = rightEyeContext.getImageData(0, 0, rightEyeCanvas.width, rightEyeCanvas.height);
+        for (let i = 0; i < rightEyeImageData.data.length; i += 4) {
             // Set red and blue channel to zero
-            cyanImageData.data[i] = 0;
-            cyanImageData.data[i + 2] = 0;
+            rightEyeImageData.data[i] = 0;
+            rightEyeImageData.data[i + 2] = 0;
             if (isMonochromeMode)
             {
-                cyanImageData.data[i + 0] = cyanImageData.data[i + 1];
-                cyanImageData.data[i + 2] = cyanImageData.data[i + 1];
+                rightEyeImageData.data[i + 0] = rightEyeImageData.data[i + 1];
+                rightEyeImageData.data[i + 2] = rightEyeImageData.data[i + 1];
             }
         }
-        cyanContext.putImageData(cyanImageData, 0, 0);
+        rightEyeContext.putImageData(rightEyeImageData, 0, 0);
     }
 
     // Start processing frames once  the webcam is ready
