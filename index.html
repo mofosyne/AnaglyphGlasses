@@ -135,8 +135,8 @@
     function updateZoom() {
       const zoomValue = zoomSlider.value;
 
-      const leftEyeContext = leftEyeCanvas.getContext('2d');
-      const rightEyeContext = rightEyeCanvas.getContext('2d');
+      const leftEyeContext = leftEyeCanvas.getContext('2d', { willReadFrequently: true });
+      const rightEyeContext = rightEyeCanvas.getContext('2d', { willReadFrequently: true });
 
       // Clear previous transformations
       leftEyeContext.setTransform(1, 0, 0, 1, 0, 0);
@@ -163,8 +163,8 @@
     getCameraStream();
 
     function processFrame() {
-        const leftEyeContext = leftEyeCanvas.getContext('2d');
-        const rightEyeContext = rightEyeCanvas.getContext('2d');
+        const leftEyeContext = leftEyeCanvas.getContext('2d', { willReadFrequently: true });
+        const rightEyeContext = rightEyeCanvas.getContext('2d', { willReadFrequently: true });
 
         // Draw webcam video on both canvases
         leftEyeContext.drawImage(webcam, 0, 0, leftEyeCanvas.width, leftEyeCanvas.height);
