@@ -53,6 +53,7 @@
 
     #glasses {
       display: flex;
+      gap: 0; /* Initial spacing value */
     }
 
     .leftEyeGlass,
@@ -80,6 +81,7 @@
         <option value="redGreen">Red/Green</option>
       </select>
     <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1" oninput="updateZoom()">
+    <input type="range" id="spacingSlider" min="0" max="50" step="1" value="0" oninput="updateSpacing()">
     <a id="githubLink" href="https://github.com/mofosyne/AnaglyphGlasses" target="_blank">Github Project Page</a>
   </div>
 
@@ -101,6 +103,23 @@
     function changeColorPair() {
         const colorPairSelector = document.getElementById('colorPair');
         currentColorPair = colorPairSelector.value;
+    }
+
+    function updateSpacing() {
+        const spacingValue = parseInt(document.getElementById('spacingSlider').value);
+        const glassesDiv = document.getElementById('glasses');
+        const leftEyeCanvas = document.getElementById('leftEyeCanvas');
+        const rightEyeCanvas = document.getElementById('rightEyeCanvas');
+
+        // Calculate the new width for the canvases in vw
+        const canvasWidthVW = (100-spacingValue)/2 ;
+
+        // Adjust spacing between the canvases
+        glassesDiv.style.gap = `${spacingValue}vw`;
+
+        // Set the new width for the canvases in vw
+        leftEyeCanvas.style.width = `${canvasWidthVW}vw`;
+        rightEyeCanvas.style.width = `${canvasWidthVW}vw`;
     }
 
     // Function to toggle between color pair and monochrome modes
